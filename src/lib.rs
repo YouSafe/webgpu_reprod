@@ -16,7 +16,7 @@ pub struct State {
     device: wgpu::Device,
     queue: wgpu::Queue,
     config: wgpu::SurfaceConfiguration,
-    is_surface_configured: bool,
+    new_desired_size: Option<(u32, u32)>,
     window: Arc<Window>,
 }
 
@@ -88,18 +88,13 @@ impl State {
             device,
             queue,
             config,
-            is_surface_configured: false,
+            new_desired_size: None,
             window,
         })
     }
 
     pub fn resize(&mut self, width: u32, height: u32) {
-        if width > 0 && height > 0 {
-            self.config.width = width;
-            self.config.height = height;
-            self.surface.configure(&self.device, &self.config);
-            self.is_surface_configured = true;
-        }
+        self.new_desired_size = Some((width, height));
     }
 
     fn update(&mut self) {}
@@ -108,8 +103,10 @@ impl State {
         self.window.request_redraw();
 
         // We can't render unless the surface is configured
-        if !self.is_surface_configured {
-            return Ok(());
+        if let Some((width, height)) = self.new_desired_size.take() {
+            self.config.width = width;
+            self.config.height = height;
+            self.surface.configure(&self.device, &self.config);
         }
 
         let output = self.surface.get_current_texture()?;
