@@ -34,7 +34,7 @@ jobs:
           echo "$PWD/bin" >> $GITHUB_PATH
 
       - name: Build with Trunk
-        run: trunk build --release --dist public
+        run: trunk build --public-url /webgpu_reprod --release --dist public
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
